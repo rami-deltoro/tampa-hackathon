@@ -21,22 +21,25 @@ TEST_DATA_SIZE = 0.2  # 20% of the data
 LABELS = ["Normal", "Fraud"]
 
 def analyze_data(fraud_file):
-    # print("Printing the first 5 lines, to verify read correctly.")
-    # print(fraud_file.head(n=5)) #just to check you imported the dataset properly
-
-    print("Shape is" + str(fraud_file.shape) + "\n\n")
-
-    print("Are there nulls in data? : " + str(fraud_file.isnull().values.any()) + "\n\n")
-
-    print(
-        "count the number of normal (0) and fraud (1) rows. As is typical in fraud and anomaly detection in general, this is a very unbalanced dataset. ")
-    print(pandas.value_counts(fraud_file['Class'], sort=True))
-    print("\n\n")
-
-    # if you don't have an intuitive sense of how imbalanced these two classes are, let's go visual
-    # As you can see, the normal cases strongly outweigh the fraud cases.
-
     count_classes = pandas.value_counts(fraud_file['Class'], sort=True)
+
+    print("\nShape is:")
+    print(count_classes)
+
+    normal_df = fraud_file[fraud_file.Class == 0]  # save normal_df observations into a separate fraud_file
+    fraud_df = fraud_file[fraud_file.Class == 1]  # do the same for frauds
+
+    print("=================================")
+    print("Normal Transaction Amount Summary")
+    print("=================================")
+    print(normal_df.Amount.describe())
+    print("\n")
+    print("=================================")
+    print("Fraud Transaction Amount Summary")
+    print("=================================")
+    print(fraud_df.Amount.describe())
+    print("=================================")
+
     count_classes.plot(kind='bar', rot=0)
     matplot.xticks(range(2), LABELS)
     matplot.title("Frequency by observation number")
@@ -44,27 +47,6 @@ def analyze_data(fraud_file):
     matplot.ylabel("Number of Observations");
     matplot.show()
 
-    normal_df = fraud_file[fraud_file.Class == 0]  # save normal_df observations into a separate fraud_file
-    fraud_df = fraud_file[fraud_file.Class == 1]  # do the same for frauds
-
-    print(
-        "Let's look at some summary statistics and see if there are obvious differences between fraud and normal transactions.")
-    print("=================================")
-    print("Normal Transaction Amount Summary")
-    print("=================================")
-    print(normal_df.Amount.describe())
-    print("\n\n")
-    print("=================================")
-    print("Fraud Transaction Amount Summary")
-    print("=================================")
-    print(fraud_df.Amount.describe())
-    print("=================================")
-
-    # plot of high value transactions
-    # Since the fraud cases are relatively few in number compared to bin size,
-    # we see the data looks predictably more variable.
-    # In the long tail, especially, we are likely observing only a single fraud transaction.
-    # It would be hard to differentiate fraud from normal transactions by transaction amount alone.
     bins = numpy.linspace(200, 2500, 100)
     matplot.hist(normal_df.Amount, bins, alpha=1, normed=True, label='Normal')
     matplot.hist(fraud_df.Amount, bins, alpha=0.6, normed=True, label='Fraud')
@@ -74,8 +56,6 @@ def analyze_data(fraud_file):
     matplot.ylabel("Percentage of transactions (%)");
     matplot.show()
 
-    # With a few exceptions, the transaction amount does not look very informative.
-    # Let's look at the time of day next.
     bins = numpy.linspace(0, 48, 48)  # 48 hours
     matplot.hist((normal_df.Time / (60 * 60)), bins, alpha=1, normed=True, label='Normal')
     matplot.hist((fraud_df.Time / (60 * 60)), bins, alpha=0.6, normed=True, label='Fraud')
@@ -83,7 +63,6 @@ def analyze_data(fraud_file):
     matplot.title("Percentage of transactions by hour")
     matplot.xlabel("Transaction time as measured from first transaction in the dataset (hours)")
     matplot.ylabel("Percentage of transactions (%)");
-    # plt.hist((fraud_file.Time/(60*60)),bins)
     matplot.show()
 
     # Visual Exploration of Transaction Amount vs. Hour
